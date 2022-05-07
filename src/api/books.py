@@ -70,6 +70,36 @@ class Books(Resource):
             api.abort(404, f"Book {book_id} does not exist")
         return book, 200
 
+    def delete(self, book_id):
+        response_object = {}
+        book = Book.query.filter_by(id=book_id).first()
+
+        if not book:
+            api.abort(404, f'Book {book_id} does not exist')
+
+        db.session.delete(book)
+        db.session.commit()
+        response_object["message"] = f'{book.title} was removed!'
+        return response_object, 200
+
+    def put(self, book_id):
+        post_data = request.get_json()
+        title = post_data.get("title")
+        published_year = post_data.get("published_year")
+        authors = post_data.get("authors")
+        response_object = {}
+
+        book = Book.query.filter_by(id=book_id).first()
+        if not book:
+            api.abort(404, f'Book {book_id} does not exist')
+        book.title = title
+        book.published_year = published_year
+        book.authors = authors
+        db.session.commit()
+
+        response_object["message"] = f"{book.title} was updated!"
+        return response_object, 200
+
 
 @books_blueprints.route("/search", methods=["GET"])
 def search():
